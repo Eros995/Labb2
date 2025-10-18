@@ -54,7 +54,6 @@ namespace Labb2
             while (running)
             {
                 level.Draw(visionRadius);
-
                 DrawUI();
 
                 if (!Console.KeyAvailable)
@@ -78,6 +77,13 @@ namespace Labb2
                 int targetY = level.Player.Y + dy;
 
                 var enemyAtTarget = level.GetEnemyAt(targetX, targetY);
+                if (enemyAtTarget == null && !level.IsBlocked(targetX, targetY))
+                {
+                    level.Player.X = targetX;
+                    level.Player.Y = targetY;
+                }
+
+                level.Player.Turn();
 
                 if (enemyAtTarget != null)
                 {
@@ -92,13 +98,6 @@ namespace Labb2
                         break;
                     }
                 }
-                else if (!level.IsBlocked(targetX, targetY))
-                {
-                    level.Player.X = targetX;
-                    level.Player.Y = targetY;
-                }
-
-                level.Player.Turn(); // Hoppar upp med 100 vid combat lyckdes inte fixa detta.
 
                 foreach (var enemy in level.Elements.OfType<Enemy>().ToList())
                 {

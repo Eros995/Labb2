@@ -73,40 +73,30 @@ namespace Labb2
             }
         }
 
+        private Dictionary<LevelElement, (int x, int y)> previousPositions = new();
+
         public void Draw(int visionRadius)
         {
             if (Player == null) return;
+
             int px = Player.X;
             int py = Player.Y;
 
-            for (int y = 0; y < Height; y++)
+            foreach (var element in elements)
             {
-                for (int x = 0; x < Width; x++)
+                if (previousPositions.TryGetValue(element, out var pos))
                 {
-                    var e = GetElementAt(x, y);
-                    bool visible = false;
-
-                    if (e is Wall) visible = rememberedWalls.Contains((x, y));
-                    else if (e is Enemy enemy)
-                    {
-                        double distance = Math.Sqrt(Math.Pow(enemy.X - px, 2) + Math.Pow(enemy.Y - py, 2));
-                        visible = distance <= visionRadius;
-                        if (enemy is Rat && enemySeen.ContainsKey(enemy) && enemySeen[enemy]) visible = true;
-                    }
-                    else if (e == Player) visible = true;
-
-                    if (!visible)
-                    {
-                        Console.SetCursorPosition(x, y);
-                        Console.Write(' ');
-                    }
+                    Console.SetCursorPosition(pos.x, pos.y);
+                    Console.Write(' ');
                 }
             }
 
             foreach (var wall in elements.OfType<Wall>())
             {
                 double distance = Math.Sqrt(Math.Pow(wall.X - px, 2) + Math.Pow(wall.Y - py, 2));
-                if (distance <= visionRadius) rememberedWalls.Add((wall.X, wall.Y));
+                if (distance <= visionRadius)
+                    rememberedWalls.Add((wall.X, wall.Y));
+
                 wall.Draw(distance <= visionRadius || rememberedWalls.Contains((wall.X, wall.Y)));
             }
 
@@ -117,19 +107,12 @@ namespace Labb2
                 double distance = Math.Sqrt(Math.Pow(enemy.X - px, 2) + Math.Pow(enemy.Y - py, 2));
                 bool visible = distance <= visionRadius;
 
-                if (enemy is Rat)
-                {
-                    if (!enemySeen.ContainsKey(enemy)) enemySeen[enemy] = false;
-                    if (visible) enemySeen[enemy] = true;
-                    enemy.Draw(enemySeen[enemy]);
-                }
-                else if (enemy is Snake)
-                {
-                    enemy.Draw(visible);
-                }
+                enemy.Draw(visible);
+                previousPositions[enemy] = (enemy.X, enemy.Y);
             }
 
             Player.Draw(true);
+            previousPositions[Player] = (Player.X, Player.Y);
         }
     }
 }

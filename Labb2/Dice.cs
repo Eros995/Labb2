@@ -33,5 +33,5 @@ namespace Labb2
             string sign = modifier >= 0 ? "+" : "-";
             return $"{numberOfDice}d{sidesPerDice}{sign}{Math.Abs(modifier)}";
         }
-    }
+     }
 }
